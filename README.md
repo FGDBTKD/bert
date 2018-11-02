@@ -2,7 +2,7 @@
 
 ## Introduction
 
-**BERT**, or **B**idirectional **E**mbedding **R**epresentations from
+**BERT**, or **B**idirectional **E**ncoder **R**epresentations from
 **T**ransformers, is a new method of pre-training language representations which
 obtains state-of-the-art results on a wide array of Natural Language Processing
 (NLP) tasks.
@@ -43,7 +43,7 @@ minutes.
 
 BERT is method of pre-training language representations, meaning that we train a
 general-purpose "language understanding" model on a large text corpus (like
-Wikipedia), and then use that model for downstream NLP tasks that we are about
+Wikipedia), and then use that model for downstream NLP tasks that we care about
 (like question answering). BERT outperforms previous methods because it is the
 first *unsupervised*, *deeply bidirectional* system for pre-training NLP.
 
@@ -205,7 +205,8 @@ the following flags to `run_classifier.py` or `run_squad.py`:
 
 Please see the
 [Google Cloud TPU tutorial](https://cloud.google.com/tpu/docs/tutorials/mnist)
-for how to use Cloud TPUs.
+for how to use Cloud TPUs. Alternatively, you can use the Google Colab notebook
+"[BERT FineTuning with Cloud TPUs](https://colab.research.google.com/github/tensorflow/tpu/blob/master/tools/colab/bert_finetuning_with_cloud_tpus.ipynb)".
 
 On Cloud TPUs, the pretrained model and the output directory will need to be on
 Google Cloud Storage. For example, if you have a bucket named `some_bucket`, you
@@ -310,7 +311,7 @@ python run_squad.py \
   --do_predict=True \
   --predict_file=$SQUAD_DIR/dev-v1.1.json \
   --train_batch_size=12 \
-  --learning_rate=5e-5 \
+  --learning_rate=3e-5 \
   --num_train_epochs=2.0 \
   --max_seq_length=384 \
   --doc_stride=128 \
@@ -346,8 +347,8 @@ python run_squad.py \
   --train_file=$SQUAD_DIR/train-v1.1.json \
   --do_predict=True \
   --predict_file=$SQUAD_DIR/dev-v1.1.json \
-  --train_batch_size=48 \
-  --learning_rate=5e-5 \
+  --train_batch_size=24 \
+  --learning_rate=3e-5 \
   --num_train_epochs=2.0 \
   --max_seq_length=384 \
   --doc_stride=128 \
@@ -583,6 +584,14 @@ sentence per line. (It is important that these be actual sentences for the "next
 sentence prediction" task). Documents are delimited by empty lines. The output
 is a set of `tf.train.Example`s serialized into `TFRecord` file format.
 
+You can perform sentence segmentation with an off-the-shelf NLP toolkit such as
+[spaCy](https://spacy.io/). The `create_pretraining_data.py` script will
+concatenate segments until they reach the maximum sequence length to minimize
+computational waste from padding (see the script for more details). However, you
+may want to intentionally add a slight amount of noise to your input data (e.g.,
+randomly truncate 2% of input segments) to make it more robust to non-sentential
+input during fine-tuning.
+
 This script stores all of the examples for the entire input file in memory, so
 for large data files you should shard the input file and call the script
 multiple times. (You can pass in a file glob to `run_pretraining.py`, e.g.,
@@ -671,7 +680,7 @@ accuracy numbers.
 *   If you are pre-training from scratch, be prepared that pre-training is
     computationally expensive, especially on GPUs. If you are pre-training from
     scratch, our recommended recipe is to pre-train a `BERT-Base` on a single
-    [preemptable Cloud TPU v2](https://cloud.google.com/tpu/docs/pricing), which
+    [preemptible Cloud TPU v2](https://cloud.google.com/tpu/docs/pricing), which
     takes about 2 weeks at a cost of about $500 USD (based on the pricing in
     October 2018). You will have to scale down the batch size when only training
     on a single Cloud TPU, compared to what was used in the paper. It is
@@ -715,9 +724,9 @@ available. However, keep in mind that these are not compatible with our
 
 ## Using BERT in Colab
 
-If you want to use BERT with [Colab](https://colab.sandbox.google.com), you can
+If you want to use BERT with [Colab](https://colab.research.google.com), you can
 get started with the notebook
-"[BERT FineTuning with Cloud TPUs](https://colab.sandbox.google.com/github/tensorflow/tpu/blob/master/tools/colab/bert_finetuning_with_cloud_tpus.ipynb)".
+"[BERT FineTuning with Cloud TPUs](https://colab.research.google.com/github/tensorflow/tpu/blob/master/tools/colab/bert_finetuning_with_cloud_tpus.ipynb)".
 **At the time of this writing (October 31st, 2018), Colab users can access a
 Cloud TPU completely for free.** Note: One per user, availability limited,
 requires a Google Cloud Platform account with storage (although storage may be
